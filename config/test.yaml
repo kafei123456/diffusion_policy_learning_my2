@@ -1,0 +1,62 @@
+defaults:
+  - _self_ #此位置
+  
+_target_: workspace.train_diffusion_unet_workspace.Diffussion_Train
+
+policy:
+  _target_: model.diffussion_policy.Diffussion_policy
+
+  noise_scheduler:
+    _target_: diffusers.schedulers.scheduling_ddpm.DDPMScheduler
+    num_train_timesteps: 100
+    # the choise of beta schedule has big impact on performance
+    # we found squared cosine works the best
+    beta_schedule: 'squaredcos_cap_v2'
+    # clip output to [-1,1] to improve stability
+    clip_sample: True
+    # our network predicts noise (instead of denoised action)
+    prediction_type: 'epsilon'
+
+
+  vision_encoder_name:  "resnet18"
+  vision_feature_dim: 512
+  lowdim_obs_dim: 2
+  action_dim: 2
+  obs_horizon: 2
+  device: "cuda:0"
+
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 1.0e-4
+  betas: [0.95, 0.999]
+  eps: 1.0e-8
+  weight_decay: 1.0e-6
+
+dataset:
+  _target_: dataset.dataset_my.PushTImageDataset
+
+  dataset_path: "./data/pusht_cchi_v7_replay.zarr.zip"
+  pred_horizon: 16
+  obs_horizon: 2
+  action_horizon: 8
+
+dataloader:
+  batch_size: 64
+  num_workers: 1
+  shuffle: True
+  pin_memory: True
+  persistent_workers: True
+
+ema:
+  _target_: diffusers.training_utils.EMAModel
+
+  inv_gamma: 1.0
+
+
+training:
+  num_epochs: 100
+  use_ema: True
+
+checkpoint:
+  path: 'weight/'
+  save_epoch: 10
