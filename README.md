@@ -1,1 +1,1 @@
-This repository is a simple PyTorch implementation for paper: # This repository contains PyTorch implementation for paper
+This repository is a simple PyTorch implementation for paper[Diffusion Policy:Visuomotor Policy Learning via Action Diffusion]
